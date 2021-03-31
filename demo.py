@@ -13,14 +13,17 @@ from math import log
 def encrypt(P, K):
     r1, r2, r3, r4, r5 = K[0], K[1], K[3], K[4], K[5]
     size = P.shape
+    if(len(size) == 2):
+        h = 1
+    else:
+        h = size[2]
     w = size[0]
     l = size[1]
-    h = 1
     range_i = 2 * w + 2 * l
-    X0 = np.zeros(1024)
-    X = np.zeros(257)
-    C = np.zeros(257)
-    C1 = np.zeros((257, 257))
+    X0 = np.zeros(range_i)
+    X = np.zeros(w + 1)
+    C = np.zeros(w + 1)
+    C1 = np.zeros((w + 1, l + 1))
     X0[0] = K[2]
     # LTS system Logistic-Tent System
     for i in range(1,range_i):
@@ -53,7 +56,7 @@ def encrypt(P, K):
     # 3rd time of 4 left
     for j in range(w):
         X[0] = mod(j * X0 [j + w + l], 1)
-        C2 = np.zeros(257)
+        C2 = np.zeros(l + 1)
         C2[1] = C0[j + w + l]
         for i in range(l, 0, -1):
             X[l - i + 1] = mod(r4 * (1 - X[l - i + 0]) * X[l - i + 0] + 1 * (4 - r4) / 2 * (X[l - i + 0] * float(X[l - i + 0] < 0.5) + (1 - X[l - i + 0]) * float(X[l - i + 0] >= 0.5)), 1)
@@ -65,9 +68,9 @@ def encrypt(P, K):
    
     # 4th time of 4 up
     for i in range(l):
-        X = np.zeros(257)
+        X = np.zeros(w + 1)
         X[0] = mod(i * X0[i + 2 * w + l], 1)
-        C3 = np.zeros((257, 1))
+        C3 = np.zeros((w + 1, 1))
         C3[w, 0] = C0[i + 2 * w + l]
         for j in range(w, 0, -1):
             X[w - j + 1] = mod(r5 * (1 - X[w - j + 0]) * X[w - j + 0] + (4 - r5) / 2 * (X[w - j + 0] * float(X[w - j + 0] < 0.5) + (1 - X[w - j + 0]) * float(X[w - j + 0] >= 0.5)), 1)
@@ -80,15 +83,18 @@ def encrypt(P, K):
 def decrypt(P, K):
     r1, r2, r3, r4, r5 = K[0], K[1], K[3], K[4], K[5]
     size = P.shape
+    if(len(size) == 2):
+        h = 1
+    else:
+        h = size[2]
     w = size[0]
     l = size[1]
-    h = 1
     range_i = 2 * w + 2 * l
-    X0 = np.zeros(1024)
-    X = np.zeros(257)
-    C = np.zeros(257)
-    C1 = np.zeros((257, 257))
-    C2 = np.zeros(257)
+    X0 = np.zeros(range_i)
+    X = np.zeros(w + 1)
+    C = np.zeros(w + 1)
+    C1 = np.zeros((w + 1, l + 1))
+    C2 = np.zeros(l + 1)
     X0[0] = K[2]
     for i in range(1,range_i):
         X0[i] = mod(r1 * (1 - X0[i - 1]) * X0[i - 1] + 1 * (4 - r1) / 4 * (X0[i - 1] / 0.5 * float(X0[i - 1] < 0.5) + (1 - X0[i - 1]) / (1 - 0.5) * float(X0[i - 1] >= 0.5)), 1)
@@ -162,7 +168,7 @@ def entropy(props, base=2):
  
 if __name__ == '__main__':
     K = [3.99, 3.96, 0.6, 4, 3.999, 3.997]
-    img = plt.imread('5.1.12.tiff')
+    img = plt.imread('4.1.01.tiff')
     img = np.array(img)
     P = np.array(img)
     P1 = P.copy()
@@ -172,6 +178,8 @@ if __name__ == '__main__':
     C_temp = C.copy()
     toc = time.time()
     D = decrypt(C_temp, K)
+
+    print('Encrypted time consumed is ', toc - tic)
 
     plt.figure() # set the windows size
     plt.suptitle('Figure1: Final Result') # image title
@@ -260,3 +268,7 @@ if __name__ == '__main__':
     plt.subplot(2,2,3), plt.title('DK2 decrypting with K2')
     plt.imshow(DK2,cmap='gray'), plt.axis('on')
     plt.show()
+
+
+
+
